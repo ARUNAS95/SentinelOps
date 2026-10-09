@@ -28,6 +28,27 @@ Open http://127.0.0.1:8000/docs. Try `sentinelops scan-cloud examples/aws-snapsh
 
 AI triage is disabled by default. To enable it, set `SENTINELOPS_AI_API_KEY` in the server environment; optionally set `SENTINELOPS_AI_MODEL` (defaults to `gpt-4.1-mini`). This sends finding IDs, fixed rule titles, severities, fixed recommendations, and allowlisted remediation names to the OpenAI Responses API. It excludes submitted source text, match evidence, secret values, and resource labels. The model has no tools and cannot execute remediation. Its output is schema-validated, bounded, and advisory; local severity rules remain the floor. If the provider fails, the API returns deterministic triage and writes a fallback audit event.
 
+## Local AWS demo: KMS and Secrets Manager
+
+This exercise uses LocalStack with fixed dummy credentials (`test/test`) and binds its AWS-compatible API to `127.0.0.1`. The SDK helper accepts only localhost or the Compose-only `localstack` hostname on port 4566; it cannot target AWS or arbitrary hosts. Never replace the dummy values with real credentials.
+
+Requirements: Docker Compose and Terraform.
+
+```bash
+docker compose up --build -d localstack api
+docker compose --profile infra run --rm terraform init
+docker compose --profile infra run --rm terraform apply -auto-approve
+docker compose --profile infra run --rm terraform output
+```
+
+Copy the displayed `kms_key_id` and `secret_id` into this check. It performs a KMS encrypt/decrypt roundtrip and writes/reads a dummy value through Secrets Manager. It prints only pass/fail status:
+
+```bash
+docker compose exec api sentinelops local-aws-check --key-id <kms-key-id> --secret-id <secret-id>
+```
+
+The Terraform configuration creates a demo KMS key, alias, and Secrets Manager secret encrypted with that key. State and services run locally. LocalStack is in-memory for this demo; stopping the container discards its resources.
+
 ## Workflow
 
 1. `POST /scan/cloud` accepts an AWS-style JSON snapshot; `POST /scan/secrets` accepts inline text.
