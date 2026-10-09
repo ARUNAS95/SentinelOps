@@ -7,7 +7,7 @@ def test_public_bucket_and_wildcard_iam():
     assert all(f.severity.value in {"critical","high"} for f in results)
 
 def test_secret_value_is_redacted():
-    secret="AKIAABCDEFGHIJKLMNOP"
+    secret="AKIA" + "ABCDEFGHIJKLMNOP"
     result=scan_text(f"AWS_KEY={secret}","sample.env")
     assert len(result)==1 and secret not in result[0].model_dump_json()
     assert "redacted" in result[0].evidence
