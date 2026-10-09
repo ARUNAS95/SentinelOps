@@ -4,10 +4,10 @@ from .models import Finding, RemediationRequest, Triage
 from .remediation import RemediationService
 from .scanner import scan_cloud, scan_text
 from .store import AuditStore
-from .triage import TriageProvider
+from .triage import TriageProvider, configured_provider
 
 app=FastAPI(title="SentinelOps",version="0.1.0",description="Safe cloud security review. Remediation is simulated.")
-audit=AuditStore(); remediator=RemediationService(audit); provider=TriageProvider(); findings={}
+audit=AuditStore(); remediator=RemediationService(audit); provider=configured_provider(); findings={}
 class CloudScan(BaseModel):
     config: dict=Field(default_factory=dict)
 class TextScan(BaseModel):
@@ -34,7 +34,14 @@ def secrets_scan(body: TextScan):
 def list_findings(): return list(findings.values())
 @app.post("/triage",response_model=Triage)
 def triage():
-    result=provider.triage(list(findings.values()))
+    current=list(findings.values())
+    try:
+        result=provider.triage(current)
+    except Exception as exc:
+        # AI is advisory; any provider, network, or validation failure falls back locally.
+        result=TriageProvider().triage(current)
+        result.provider="local-rules-fallback"
+        audit.record("triage_fallback","system",{"reason":type(exc).__name__})
     audit.record("triage","system",{"finding_count":len(findings),"provider":result.provider,"priority":result.priority})
     return result
 @app.post("/remediations")
