@@ -10,10 +10,10 @@ DUMMY_SECRET_KEY="test"
 def _local_endpoint(endpoint: str | None=None) -> str:
     value=endpoint or os.getenv("SENTINELOPS_LOCAL_AWS_ENDPOINT",DEFAULT_ENDPOINT)
     parsed=urlsplit(value)
-    if (parsed.scheme!="http" or parsed.hostname not in {"localhost","127.0.0.1","::1"}
+    if (parsed.scheme!="http" or parsed.hostname not in {"localhost","127.0.0.1","::1","localstack"}
             or parsed.port not in {None,4566} or parsed.username or parsed.password
             or parsed.path not in {"","/"} or parsed.query or parsed.fragment):
-        raise ValueError("AWS demo endpoint must be http://localhost:4566 (loopback only).")
+        raise ValueError("AWS demo endpoint must target localhost or the LocalStack compose service on port 4566.")
     return value.rstrip("/")
 
 def local_client(service: str, endpoint: str | None=None):
