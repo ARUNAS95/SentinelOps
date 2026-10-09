@@ -11,7 +11,7 @@
 - Requests must match a predefined, allowlisted action for the finding.
 - A named human reviewer must approve or reject each request.
 - Finding evidence stores rule and location only; matched credential values are never returned.
-- Triage is isolated behind a provider interface; the MVP uses deterministic local rules.
+- AI triage is opt-in, has no tools or execution access, receives only fixed rule-generated metadata, and cannot lower deterministic severity.
 
 ## Quick start
 
@@ -23,6 +23,10 @@ uvicorn sentinelops.api:app --reload
 ```
 
 Open http://127.0.0.1:8000/docs. Try `sentinelops scan-cloud examples/aws-snapshot.json`, or scan local text with `sentinelops scan-secrets path/to/file`.
+
+## Optional AI-assisted triage
+
+AI triage is disabled by default. To enable it, set `SENTINELOPS_AI_API_KEY` in the server environment; optionally set `SENTINELOPS_AI_MODEL` (defaults to `gpt-4.1-mini`). This sends finding IDs, fixed rule titles, severities, fixed recommendations, and allowlisted remediation names to the OpenAI Responses API. It excludes submitted source text, match evidence, secret values, and resource labels. The model has no tools and cannot execute remediation. Its output is schema-validated, bounded, and advisory; local severity rules remain the floor. If the provider fails, the API returns deterministic triage and writes a fallback audit event.
 
 ## Workflow
 
