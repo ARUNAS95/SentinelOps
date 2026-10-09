@@ -1,7 +1,7 @@
 from sentinelops.scanner import scan_cloud, scan_text
 
 def test_public_bucket_and_wildcard_iam():
-    results=scan_cloud({"buckets":[{"name":"sample","public_access_block":{"block_public_policy":False}}],
+    results=scan_cloud({"buckets":[{"name":"sample","encryption":"AES256","public_access_block":{"block_public_policy":False}}],
         "iam_policies":[{"name":"worker","statements":[{"effect":"Allow","action":"*","resource":["arn:demo"]}]}]})
     assert {f.remediation for f in results}=={"enable_public_access_block","scope_iam_policy"}
     assert all(f.severity.value in {"critical","high"} for f in results)
