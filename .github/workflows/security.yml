@@ -20,16 +20,16 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       - run: ruff check .
       - run: pytest
-      - run: terraform -chdir=infra/localstack fmt -check -recursive
-      - run: terraform -chdir=infra/localstack init -backend=false
-      - run: terraform -chdir=infra/localstack validate
+      - run: terraform -chdir=infra/local-aws fmt -check -recursive
+      - run: terraform -chdir=infra/local-aws init -backend=false
+      - run: terraform -chdir=infra/local-aws validate
       - run: docker compose config --quiet
       - run: docker build -t sentinelops:ci .
-      - name: LocalStack KMS and Secrets Manager smoke test
+      - name: Moto KMS and Secrets Manager smoke test
         run: |
           set -euo pipefail
           trap 'docker compose down --remove-orphans' EXIT
-          docker compose up -d --build localstack api
+          docker compose up -d --build moto api
           docker compose --profile infra run --rm terraform init
           docker compose --profile infra run --rm terraform apply -auto-approve
           key_id="$(docker compose --profile infra run --rm terraform output -raw kms_key_id)"
