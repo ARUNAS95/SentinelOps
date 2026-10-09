@@ -7,3 +7,7 @@ __pycache__/
 *.sqlite3
 dist/
 build/
+
+.terraform/
+*.tfstate
+*.tfstate.*
