@@ -1,4 +1,4 @@
-"""AWS demos that are hard-pinned to a loopback LocalStack endpoint."""
+"""AWS demos that are hard-pinned to a loopback Moto endpoint."""
 from __future__ import annotations
 import os
 from urllib.parse import urlsplit
@@ -13,7 +13,7 @@ def _local_endpoint(endpoint: str | None=None) -> str:
     if (parsed.scheme!="http" or parsed.hostname not in {"localhost","127.0.0.1","::1","moto"}
             or parsed.port not in {None,5000} or parsed.username or parsed.password
             or parsed.path not in {"","/"} or parsed.query or parsed.fragment):
-        raise ValueError("AWS demo endpoint must target localhost or the LocalStack compose service on port 5000.")
+        raise ValueError("AWS demo endpoint must target localhost or the Moto compose service on port 5000.")
     return value.rstrip("/")
 
 def local_client(service: str, endpoint: str | None=None):
@@ -23,7 +23,7 @@ def local_client(service: str, endpoint: str | None=None):
         aws_access_key_id=DUMMY_ACCESS_KEY,aws_secret_access_key=DUMMY_SECRET_KEY)
 
 def verify_roundtrip(key_id: str, secret_id: str, value: str) -> dict[str,bool]:
-    """Exercise KMS encrypt/decrypt and Secrets Manager using LocalStack only."""
+    """Exercise KMS encrypt/decrypt and Secrets Manager using Moto only."""
     kms=local_client("kms")
     ciphertext=kms.encrypt(KeyId=key_id,Plaintext=value.encode("utf-8"))["CiphertextBlob"]
     plaintext=kms.decrypt(CiphertextBlob=ciphertext)["Plaintext"].decode("utf-8")
