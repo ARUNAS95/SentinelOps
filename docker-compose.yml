@@ -1,16 +1,12 @@
 services:
-  localstack:
-    image: localstack/localstack:latest
+  moto:
+    image: motoserver/moto:5.2.3
     ports:
-      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:5000:5000"
     environment:
-      SERVICES: kms,secretsmanager,sts
-      AWS_DEFAULT_REGION: us-east-1
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
-      DISABLE_CORS_CHECKS: "1"
+      MOTO_PORT: "5000"
     healthcheck:
-      test: ["CMD", "bash", "-c", "curl -fsS http://localhost:4566/_localstack/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/moto-api/').read()"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -20,9 +16,9 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     environment:
-      SENTINELOPS_LOCAL_AWS_ENDPOINT: http://localstack:4566
+      SENTINELOPS_LOCAL_AWS_ENDPOINT: http://moto:5000
     depends_on:
-      localstack:
+      moto:
         condition: service_healthy
 
   terraform:
@@ -31,12 +27,12 @@ services:
     entrypoint: ["terraform"]
     command: ["version"]
     volumes:
-      - ./infra/localstack:/workspace
+      - ./infra/local-aws:/workspace
     environment:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       AWS_DEFAULT_REGION: us-east-1
     profiles: ["infra"]
     depends_on:
-      localstack:
+      moto:
         condition: service_healthy
