@@ -18,7 +18,7 @@ def test_client_uses_fixed_dummy_credentials(monkeypatch):
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY","must-not-be-used")
     local_aws.local_client("kms")
     assert captured["service"]=="kms"
-    assert captured["endpoint_url"]=="http://localhost:4566"
+    assert captured["endpoint_url"]=="http://localhost:5000"
     assert captured["aws_access_key_id"]=="test"
     assert captured["aws_secret_access_key"]=="test"
 
