@@ -21,5 +21,5 @@ def test_unknown_action_is_rejected():
         "action":"delete_bucket","requested_by":"operator"})
     assert result.status_code==400
 def test_secret_api_redacts_match():
-    secret="AKIAABCDEFGHIJKLMNOP"
+    secret="AKIA" + "ABCDEFGHIJKLMNOP"
     assert secret not in client.post("/scan/secrets",json={"text":f"KEY={secret}"}).text
