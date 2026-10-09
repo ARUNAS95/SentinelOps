@@ -44,7 +44,7 @@ docker compose --profile infra run --rm terraform output
 Copy the displayed `kms_key_id` and `secret_id` into this check. It performs a KMS encrypt/decrypt roundtrip and writes/reads a dummy value through Secrets Manager. It prints only pass/fail status:
 
 ```bash
-docker compose exec api sentinelops local-aws-check --key-id <kms-key-id> --secret-id <secret-id>
+docker compose run --rm api sentinelops local-aws-check --key-id <kms-key-id> --secret-id <secret-id>
 ```
 
 The Terraform configuration creates a demo KMS key, alias, and Secrets Manager secret encrypted with that key. State and services run locally. LocalStack is in-memory for this demo; stopping the container discards its resources.
